@@ -1,14 +1,17 @@
 import numpy as np
-import sys
-import pygame
-from pygame.locals import *
+
+GLIDER = ([3, 1], [3, 2], [3, 3], [2, 3], [1, 2])
+GLIDER2 = ([2, 1], [2, 3], [3, 2], [3, 3], [4, 2])
 
 
 class Board:
-    def __init__(self, size, starting=[], random=False):
+    def __init__(self, size, starting=tuple(), random=False):
         self.sizex, self.sizey = size
         self.size = size
-        self.board = np.zeros(shape=self.size, dtype=np.int8)
+        if random:
+            self.board = np.random.randint(2, size=size)
+        else:
+            self.board = np.zeros(shape=self.size, dtype=np.int8)
 
         for pos in starting:
             self.board[pos[0], pos[1]] = 1
@@ -23,16 +26,31 @@ class Board:
             temp[2:, :-2] + \
             temp[2:, 1:-1] + \
             temp[2:, 2:]
-        return neighbours
+        return neighbours.astype(np.int8)
 
     def evolve(self):
-        pass
+        neighbours = self._count_neighbours()
+        survive_die = np.logical_not(np.round(neighbours - 2.5)).astype(np.int8)
+
+        birth = np.copy(neighbours)
+        birth[birth != 3] = 0
+        birth = np.sign(birth).astype(np.int8)
+
+        # print(survive_die, '\n')
+        # print(birth, '\n')
+
+        self.board = np.sign(self.board * survive_die + birth).astype(np.int8)
+
+        return self.board
 
 
 if __name__ == '__main__':
-    GLIDER = [[3, 1], [3, 2], [3, 3], [2, 3], [1, 2]]
-    board = Board((5, 5), GLIDER)
+    board = Board((10, 10), GLIDER)
 
     print(board.board, '\n')
-
-    print(board._count_neighbours())
+    print(board.evolve(), '\n')
+    print(board.evolve(), '\n')
+    print(board.evolve(), '\n')
+    print(board.evolve(), '\n')
+    print(board.evolve(), '\n')
+    print(board.evolve(), '\n')
